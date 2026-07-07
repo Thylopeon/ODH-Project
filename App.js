@@ -1,37 +1,42 @@
-import React from 'react';
-import { StyleSheet, Text, View, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, FlatList, ActivityIndicator } from 'react-native';
 
 export default function App() {
-  // 10 movies ka array
-  const movies = [
-    { id: '1', title: 'Inception', year: '2010' },
-    { id: '2', title: 'Interstellar', year: '2014' },
-    { id: '3', title: 'The Dark Knight', year: '2008' },
-    { id: '4', title: 'Matrix', year: '1999' },
-    { id: '5', title: 'Avatar', year: '2009' },
-    { id: '6', title: 'Avengers: Endgame', year: '2019' },
-    { id: '7', title: 'Gladiator', year: '2000' },
-    { id: '8', title: 'Titanic', year: '1997' },
-    { id: '9', title: 'Joker', year: '2019' },
-    { id: '10', title: 'Parasite', year: '2019' },
-  ];
+  const [users, setUsers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Har ek row ko kaise dikhana hai uska design
-  const renderMovie = ({ item }) => (
-    <View style={styles.movieCard}>
-      <Text style={styles.movieTitle}>{item.title}</Text>
-      <Text style={styles.movieYear}>{item.year}</Text>
+  // useEffect ka kaam: Screen load hote hi data fetch karna
+  useEffect(() => {
+    fetch('https://jsonplaceholder.typicode.com/users')
+      .then((response) => response.json())
+      .then((data) => {
+        setUsers(data);
+        setIsLoading(false); // Data mil gaya, spinner band kar do
+      })
+      .catch((error) => console.error(error));
+  }, []);
+
+  const renderUser = ({ item }) => (
+    <View style={styles.userCard}>
+      <Text style={styles.userName}>{item.name}</Text>
+      <Text style={styles.userEmail}>{item.email}</Text>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>My Favorite Movies</Text>
-      <FlatList
-        data={movies}
-        renderItem={renderMovie}
-        keyExtractor={(item) => item.id}
-      />
+      <Text style={styles.header}>User Directory</Text>
+      
+      {/* Agar loading chal raha hai toh spinner dikhao, nahi toh list */}
+      {isLoading ? (
+        <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />
+      ) : (
+        <FlatList
+          data={users}
+          renderItem={renderUser}
+          keyExtractor={(item) => item.id.toString()}
+        />
+      )}
     </View>
   );
 }
@@ -39,32 +44,29 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f2f5',
+    backgroundColor: '#fff',
     paddingTop: 50,
   },
   header: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 20,
-    color: '#333',
   },
-  movieCard: {
-    backgroundColor: '#fff',
+  userCard: {
     padding: 20,
-    marginVertical: 8,
-    marginHorizontal: 16,
-    borderRadius: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    elevation: 3, // Shadow for Android
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
   },
-  movieTitle: {
+  userName: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
-  movieYear: {
-    fontSize: 16,
-    color: '#666',
+  userEmail: {
+    fontSize: 14,
+    color: '#555',
   },
+  loader: {
+    marginTop: 50,
+  }
 });
