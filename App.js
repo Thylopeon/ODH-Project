@@ -1,83 +1,72 @@
-import React from 'react';
-import { StyleSheet, Text, View, Image, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
 export default function App() {
+  // State banaya counter ke liye, default value 0
+  const [count, setCount] = useState(0);
+
+  // Plus button ke liye function
+  const increase = () => setCount(count + 1);
+  
+  // Minus button ke liye function (0 se neeche nahi jayega)
+  const decrease = () => {
+    if (count > 0) {
+      setCount(count - 1);
+    }
+  };
+
   return (
-    // ScrollView screen ko scrollable banata hai
-    <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.container}>
       
-      {/* View web ke <div> ki tarah kaam karta hai */}
-      <View style={styles.card}>
+      <Text style={styles.counterText}>{count}</Text>
+      
+      <View style={styles.buttonRow}>
         
-        {/* Image tag URL se photo dikhane ke liye */}
-        <Image 
-          source={{ uri: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' }} 
-          style={styles.profilePic} 
-        />
-        
-        {/* Text tags web ke <p> ya <h1> ki tarah */}
-        <Text style={styles.name}>Kushagra Sen</Text>
-        <Text style={styles.bio}>Full-Stack Developer & QA Tester 🚀</Text>
-        
-        {/* TouchableOpacity mobile ka button hota hai jispe tap karne pe click feel aati hai */}
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Connect</Text>
+        <TouchableOpacity style={[styles.button, styles.decrementBtn]} onPress={decrease}>
+          <Text style={styles.buttonText}>−</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={increase}>
+          <Text style={styles.buttonText}>+</Text>
         </TouchableOpacity>
 
       </View>
-
-    </ScrollView>
+    </View>
   );
 }
 
-// Ye raha tera Flexbox aur Styling
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1, // Pura screen cover karne ke liye
-    backgroundColor: '#e9ecef',
-    alignItems: 'center', // Horizontally center
-    justifyContent: 'center', // Vertically center
-    padding: 20,
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+    alignItems: 'center',
+    justifyContent: 'center', 
   },
-  card: {
-    backgroundColor: '#ffffff',
-    padding: 30,
-    borderRadius: 15,
-    alignItems: 'center', 
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 5, // Android mein shadow dene ke liye
-    width: '90%',
-  },
-  profilePic: {
-    width: 120,
-    height: 120,
-    borderRadius: 60, // Width ka aadha (60) karne se image ekdum round ho jati hai
-    marginBottom: 15,
-  },
-  name: {
-    fontSize: 24,
-    fontWeight: 'bold', // Naam bold maanga tha
-    marginBottom: 5,
+  counterText: {
+    fontSize: 100,
+    fontWeight: 'bold',
     color: '#333',
+    marginBottom: 50,
   },
-  bio: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 20,
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 30, 
   },
   button: {
     backgroundColor: '#007bff',
-    paddingVertical: 10,
-    paddingHorizontal: 25,
-    borderRadius: 25,
+    width: 70,
+    height: 70,
+    borderRadius: 35, 
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 3, 
+  },
+  decrementBtn: {
+    backgroundColor: '#dc3545', 
   },
   buttonText: {
     color: '#fff',
+    fontSize: 40,
     fontWeight: 'bold',
-    fontSize: 16,
   }
 });
