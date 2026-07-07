@@ -1,56 +1,76 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, ImageBackground } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, ImageBackground, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 
 const Stack = createNativeStackNavigator();
-
-const movies = [
-  { id: '1', title: 'Inception', year: '2010', desc: 'A mind-bending heist thriller.', image: 'https://wallpapercat.com/w/full/9/6/1/304867-1536x2732-iphone-hd-inception-background-image.jpg' },
-  { id: '2', title: 'Interstellar', year: '2014', desc: 'A journey through a wormhole.', image: 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=800' },
-  { id: '3', title: 'The Dark Knight', year: '2008', desc: 'Batman faces the Joker.', image: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=800' },
-];
 
 function HomeScreen({ navigation }) {
   return (
     <ImageBackground 
-      source={{ uri: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800' }} 
-      style={styles.background}
-      resizeMode="cover"
+      source={{ uri: 'https://images.rawpixel.com/image_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcm00MjktMTM0LmpwZw.jpg' }} 
+      style={styles.homeContainer}
     >
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerText}>________</Text>
-      </View>
-      <FlatList
-        data={movies}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity 
-            style={styles.movieCard} 
-            onPress={() => navigation.navigate('Details', { movie: item })}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.movieTitle}>{item.title}</Text>
-          </TouchableOpacity>
-        )}
-      />
+      <Text style={styles.title}>Task Master</Text>
+      <TouchableOpacity style={styles.todoButton} onPress={() => navigation.navigate('Todo')}>
+        <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>To-Do App Kholo</Text>
+      </TouchableOpacity>
     </ImageBackground>
   );
 }
 
-function DetailsScreen({ route }) {
-  const { movie } = route.params;
+function TodoScreen() {
+  const [task, setTask] = useState('');
+  const [tasks, setTasks] = useState([]);
+  const [history, setHistory] = useState([]);
+
+  const addTask = () => {
+    if (task.trim()) {
+      setTasks([...tasks, { id: Date.now().toString(), text: task, status: 'pending' }]);
+      setTask('');
+    }
+  };
+
+  const updateTask = (id, newStatus) => {
+    const updatedTask = tasks.find(t => t.id === id);
+    if (newStatus === 'done' || newStatus === 'cancelled') {
+      setHistory([...history, { ...updatedTask, status: newStatus, time: new Date().toLocaleTimeString() }]);
+      setTasks(tasks.filter(t => t.id !== id));
+    } else {
+      setTasks(tasks.map(t => t.id === id ? { ...t, status: newStatus } : t));
+    }
+  };
+
   return (
-    <ImageBackground 
-      source={{ uri: movie.image }} 
-      style={styles.detailBackground}
-      resizeMode="cover"
-    >
-      <View style={styles.descBox}>
-        <Text style={styles.detailTitle}>{movie.title}</Text>
-        <Text style={styles.description}>{movie.desc}</Text>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
+      <Text style={styles.header}>Task Manager</Text>
+      
+      <View style={styles.inputContainer}>
+        <TextInput style={styles.input} placeholder="Naya task..." value={task} onChangeText={setTask} />
+        <TouchableOpacity style={styles.addButton} onPress={addTask}><Text style={{color:'#fff'}}>Add</Text></TouchableOpacity>
       </View>
-    </ImageBackground>
+
+      <FlatList 
+        data={tasks}
+        ListEmptyComponent={<Text style={styles.emptyText}>No work pending</Text>}
+        renderItem={({ item }) => (
+          <View style={styles.taskCard}>
+            <Text style={styles.taskText}>{item.text} <Text style={{fontSize: 10}}>({item.status})</Text></Text>
+            <View style={{flexDirection: 'row'}}>
+              <TouchableOpacity onPress={() => updateTask(item.id, 'done')}><Text style={styles.optBtn}>✅</Text></TouchableOpacity>
+              <TouchableOpacity onPress={() => updateTask(item.id, 'later')}><Text style={styles.optBtn}>⏳</Text></TouchableOpacity>
+              <TouchableOpacity onPress={() => updateTask(item.id, 'cancelled')}><Text style={styles.optBtn}>❌</Text></TouchableOpacity>
+            </View>
+          </View>
+        )}
+      />
+
+      <Text style={styles.subHeader}>History</Text>
+      <FlatList 
+        data={history} 
+        renderItem={({ item }) => <Text style={styles.historyItem}>{item.text} - {item.status} ({item.time})</Text>}
+      />
+    </KeyboardAvoidingView>
   );
 }
 
@@ -59,27 +79,25 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Details" component={DetailsScreen} />
+        <Stack.Screen name="Todo" component={TodoScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  background: { flex: 1, paddingHorizontal: 20, paddingTop: 60 },
-  headerContainer: { marginBottom: 20, alignItems: 'center' },
-  headerText: { fontSize: 30, fontWeight: '900', color: '#fff', letterSpacing: 2 },
-  movieCard: { 
-    padding: 25, 
-    backgroundColor: 'rgba(255,255,255,0.95)', 
-    marginVertical: 10, 
-    borderRadius: 20, 
-    alignItems: 'center',
-    elevation: 5
-  },
-  movieTitle: { fontSize: 20, fontWeight: 'bold' },
-  detailBackground: { flex: 1, justifyContent: 'center', padding: 20 },
-  descBox: { padding: 30, backgroundColor: 'rgba(0,0,0,0.7)', borderRadius: 30, alignItems: 'center' },
-  detailTitle: { fontSize: 32, fontWeight: '900', color: '#fff' },
-  description: { fontSize: 16, color: '#fff', textAlign: 'center', marginTop: 10 }
+  homeContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
+  title: { fontSize: 30, fontWeight: 'bold', marginBottom: 20 },
+  container: { flex: 1, paddingTop: 60, paddingHorizontal: 20, backgroundColor: '#f9f9f9' },
+  header: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
+  subHeader: { fontSize: 18, fontWeight: 'bold', marginTop: 20, marginBottom: 10 },
+  inputContainer: { flexDirection: 'row', marginBottom: 20 },
+  input: { flex: 1, borderWidth: 1, padding: 10, borderRadius: 8, borderColor: '#ccc', backgroundColor: '#fff' },
+  addButton: { marginLeft: 10, padding: 12, backgroundColor: '#4a90e2', borderRadius: 8, justifyContent: 'center' },
+  todoButton: { padding: 20, backgroundColor: '#000', borderRadius: 15 },
+  taskCard: { flexDirection: 'row', padding: 15, backgroundColor: '#fff', borderRadius: 10, marginBottom: 10, alignItems: 'center', elevation: 2 },
+  taskText: { flex: 1, fontSize: 16 },
+  optBtn: { fontSize: 20, marginLeft: 10 },
+  emptyText: { textAlign: 'center', marginTop: 20, color: '#999', fontSize: 16 },
+  historyItem: { padding: 10, borderBottomWidth: 1, borderBottomColor: '#ddd', fontSize: 14, color: '#555' }
 });
